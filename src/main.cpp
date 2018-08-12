@@ -34,9 +34,19 @@ int main(int argc, char *argv[])
 
   PID pid;
   // TODO: Initialize the pid variable.
-  double init_kp = atof(argv[1]);
-  double init_ki = atof(argv[2]);
-  double init_kd = atof(argv[3]);
+  double init_kp, init_ki, init_kd;
+  if (argc == 4)
+  {
+    init_kp = atof(argv[1]);
+    init_ki = atof(argv[2]);
+    init_kd = atof(argv[3]);
+  }
+  else
+  {
+    init_kp = -0.1;
+    init_ki = 0;
+    init_kd = -4;
+  }
 
   pid.Init(init_kp, init_ki, init_kd);
 
