@@ -43,9 +43,6 @@ void PID::Init(double Kp, double Ki, double Kd) {
 }
 
 void PID::UpdateError(double cte) {
-  // if (TotalError() < 0.2)
-    // return;
-
   steering = -p[0] * cte - p[1] * sum_cte - p[2] * (cte - prev_cte);
   if (steering > 1) steering = 1;
   if (steering < -1) steering = -1;
@@ -62,6 +59,9 @@ void PID::UpdateError(double cte) {
 }
 
 void PID::update(int i, double cte) {
+  if (TotalError() < 1E-10)
+    return;
+
   double err = cte * cte;
   if (prev_state == 0)
   {
