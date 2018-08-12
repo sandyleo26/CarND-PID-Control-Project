@@ -17,86 +17,18 @@ PID::PID() {}
 PID::~PID() {}
 
 void PID::Init(double Kp, double Ki, double Kd) {
-  p_error = 1.0;
-  i_error = 1.0;
-  d_error = 1.0;
-
-  counter = 0;
-  for (int i = 0; i < 3; i++) {
-    states.push_back(0);
-    dp.push_back(1.0);
-    p.push_back(0);
-  }
-
-  p[0] = Kp;
-  p[1] = Ki;
-  p[2] = Kd;
-  dp[0] = 1;
-  dp[1] = 0.01;
-
-
-  prev_cte = 0.0;
-  sum_cte = 0.0;
-  best_err = std::numeric_limits<double>::max();
-  steering = 0.0;
-  prev_state = 0;
+  this->Kp = Kp;
+  this->Ki = Ki;
+  this->Kd = Kd;
 }
 
 void PID::UpdateError(double cte) {
-  steering = -p[0] * cte - p[1] * sum_cte - p[2] * (cte - prev_cte);
-  if (steering > 1) steering = 1;
-  if (steering < -1) steering = -1;
-
-  std::cout << std::endl;
-  std::cout << "Kp: " << p[0] << " Ki: " << p[1] << " Kd: " << p[2] << std::endl;
-  std::cout << "dp[0]: " << dp[0] << " dp[1]: " << dp[1] << " dp[2]: " << dp[2] << std::endl; 
-
-  prev_cte = cte;
-  sum_cte += cte;
-
-  int index = counter % MOD;
-  update(index, cte);
-}
-
-void PID::update(int i, double cte) {
-  if (TotalError() < 1E-10)
-    return;
-
-  double err = cte * cte;
-  if (prev_state == 0)
-  {
-    if (err < best_err)
-    {
-      best_err = err;
-      dp[i] *= 1.1;
-      counter++;
-      p[counter % MOD] += dp[counter % MOD];
-    }
-    else
-    {
-      p[i] -= 2 * dp[i];
-      prev_state = 1;
-    }
-  }
-  else
-  {
-    if (err < best_err)
-    {
-      best_err = err;
-      dp[i] *= 1.1;
-    }
-    else
-    {
-      p[i] += dp[i];
-      dp[i] *= 0.9;
-    }
-    counter++;
-    p[counter % MOD] += dp[counter % MOD];
-    prev_state = 0;
-  }
+  d_error = cte - p_error;
+  p_error = cte;
+  i_error += cte;
 }
 
 double PID::TotalError() {
-  return dp[0] + dp[1] + dp[2];
+  return Kp * p_error + Ki * i_error + Kd * d_error;
 }
 
