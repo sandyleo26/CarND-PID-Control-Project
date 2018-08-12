@@ -10,6 +10,8 @@ using namespace std;
 * TODO: Complete the PID class.
 */
 
+const int MOD = 3;
+
 PID::PID() {}
 
 PID::~PID() {}
@@ -29,16 +31,20 @@ void PID::Init(double Kp, double Ki, double Kd) {
   p[0] = Kp;
   p[1] = Ki;
   p[2] = Kd;
+  dp[0] = 1;
+  dp[1] = 0.01;
+
 
   prev_cte = 0.0;
   sum_cte = 0.0;
   best_err = std::numeric_limits<double>::max();
   steering = 0.0;
+  prev_state = 0;
 }
 
 void PID::UpdateError(double cte) {
-  if (TotalError() < 0.2)
-    return;
+  // if (TotalError() < 0.2)
+    // return;
 
   steering = -p[0] * cte - p[1] * sum_cte - p[2] * (cte - prev_cte);
   if (steering > 1) steering = 1;
@@ -51,25 +57,25 @@ void PID::UpdateError(double cte) {
   prev_cte = cte;
   sum_cte += cte;
 
-  int index = counter++ / 2 % 2;
+  int index = counter % MOD;
   update(index, cte);
-
 }
 
 void PID::update(int i, double cte) {
   double err = cte * cte;
-  if (states[i] == 0)
+  if (prev_state == 0)
   {
     if (err < best_err)
     {
       best_err = err;
       dp[i] *= 1.1;
-      p[i] += dp[i];
+      counter++;
+      p[counter % MOD] += dp[counter % MOD];
     }
     else
     {
       p[i] -= 2 * dp[i];
-      states[i] = 1;
+      prev_state = 1;
     }
   }
   else
@@ -84,8 +90,9 @@ void PID::update(int i, double cte) {
       p[i] += dp[i];
       dp[i] *= 0.9;
     }
-    p[i] += dp[i];
-    states[i] = 0;
+    counter++;
+    p[counter % MOD] += dp[counter % MOD];
+    prev_state = 0;
   }
 }
 

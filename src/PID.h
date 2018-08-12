@@ -27,6 +27,7 @@ public:
   double prev_cte;
   double sum_cte;
   double best_err;
+  int prev_state;
   double steering;
 
   /*
